@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheen Daily</title>
+  <style>
+    /* Theme colors for easy customization */
+    :root {
+      --primary-color: #4a90e2;
+      --accent-color: #ff6b6b;
+      --background-color: #f4faff;
+      --button-color: #4a90e2;
+      --button-hover-color: #367bbd;
+      --text-color: #333;
+    }
+
+    /* Global styles */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--background-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* App container */
+    .container {
+      background-color: #fff;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    /* Greeting and Score Sections */
+    #greeting {
+      font-size: 1.7rem;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    #nameInput {
+      padding: 10px;
+      width: 80%;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .button {
+      background-color: var(--button-color);
+      color: white;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    .button:hover {
+      background-color: var(--button-hover-color);
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Quiz Section Styles */
+    .quiz-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .question {
+      font-size: 1.2rem;
+      color: var(--text-color);
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .options li {
+      padding: 12px;
+      background-color: #e7f1fc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .options li:hover {
+      background-color: var(--accent-color);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* Final Score Section */
+    .final-score {
+      font-size: 1.7rem;
+      color: var(--accent-color);
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .performance-text {
+      font-size: 1.2rem;
+      color: var(--text-color);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Greeting and Name Input Section -->
+  <div id="greeting"></div>
+  <input type="text" id="nameInput" placeholder="Enter your name" />
+  <button class="button" onclick="saveName()">Save Name</button>
+
+  <!-- Start Quiz Button -->
+  <button class="button" id="startQuizBtn" style="display: none;" onclick="startQuiz()">How was today</button>
+
+  <!-- Quiz Section -->
+  <div id="quizSection" class="quiz-container" style="display: none;">
+    <div class="question" id="questionText"></div>
+    <ul class="options" id="optionsList"></ul>
+  </div>
+
+  <!-- Final Score Section -->
+  <div id="scoreSection" style="display: none;">
+    <div class="final-score" id="finalScoreText"></div>
+    <div class="performance-text" id="performanceText"></div>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    { question: "Habit 1", options: ["Alhamdulillah, I did it", "Alas, I Couldn't"], answer: "Alhamdulillah, I did it" },
+    { question: "Hbit 2?", options: ["Alhamdulillah, I did it", "Alas, I Couldn't"], answer: "Alhamdulillah, I did it" },
+    { question: "habit 3", options: ["Alhamdulillah, I did it", "Alas, I Couldn't"], answer: "Alhamdulillah, I did it" },
+    { question: "habit 4", options: ["Alhamdulillah, I did it", "Alas, I Couldn't"], answer: "Alhamdulillah, I did it" },
+
+  ];
+
+  let score = 0;
+  let currentQuestionIndex = 0;
+
+  function setGreeting() {
+    const name = localStorage.getItem('name');
+    const hour = new Date().getHours();
+    let greeting = 'Good Evening';
+    if (hour < 12) greeting = 'Good Morning';
+    else if (hour < 18) greeting = 'Good Afternoon';
+    document.getElementById('greeting').textContent = `${greeting}, ${name || ''}!`;
+  }
+
+  function saveName() {
+    const nameInput = document.getElementById('nameInput').value;
+    if (nameInput) {
+      localStorage.setItem('name', nameInput);
+      document.getElementById('nameInput').style.display = 'none';
+      document.querySelector('.button').style.display = 'none';
+      document.getElementById('startQuizBtn').style.display = 'inline-block';
+    }
+    setGreeting();
+  }
+
+  function startQuiz() {
+    document.getElementById('greeting').style.display = 'none';
+    document.getElementById('startQuizBtn').style.display = 'none';
+    document.getElementById('quizSection').style.display = 'block';
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    const questionObj = questions[currentQuestionIndex];
+    document.getElementById('questionText').textContent = questionObj.question;
+    const optionsList = document.getElementById('optionsList');
+    optionsList.innerHTML = ''; // Clear old options
+
+    questionObj.options.forEach(option => {
+      const li = document.createElement('li');
+      li.textContent = option;
+      li.onclick = () => checkAnswer(option);
+      optionsList.appendChild(li);
+    });
+  }
+
+  function checkAnswer(selectedOption) {
+    const correctAnswer = questions[currentQuestionIndex].answer;
+    if (selectedOption === correctAnswer) {
+      score++;
+    }
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < questions.length) {
+      loadQuestion();
+    } else {
+      showFinalScore();
+    }
+  }
+
+  function showFinalScore() {
+    document.getElementById('quizSection').style.display = 'none';
+    document.getElementById('scoreSection').style.display = 'block';
+
+    const name = localStorage.getItem('name');
+    const scoreMessage = `${name}, your score is ${score} out of ${questions.length}.`;
+    let performanceMessage;
+    if (score === questions.length) {
+      performanceMessage = "Excellent!";
+    } else if (score >= questions.length / 2) {
+      performanceMessage = "Good job!";
+    } else {
+      performanceMessage = "Needs improvement.";
+    }
+
+    document.getElementById('finalScoreText').textContent = scoreMessage;
+    document.getElementById('performanceText').textContent = performanceMessage;
+  }
+
+  window.onload = () => {
+    if (localStorage.getItem('name')) {
+      document.getElementById('nameInput').style.display = 'none';
+      document.querySelector('.button').style.display = 'none';
+      document.getElementById('startQuizBtn').style.display = 'inline-block';
+    }
+    setGreeting();
+  };
+</script>
+
+</body>
+</html>
